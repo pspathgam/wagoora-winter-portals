@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script> 
 </head>
 <body>
     <div class="container">
@@ -23,7 +25,7 @@
         </section>
 
         <section class="notifications">
-            <h2>📢 Scrolling Notifications</h2>
+            <h2>📢 Notifications</h2>
             <div id="scrolling-content">
                 <p>Day 1 Quiz is now LIVE! Submit your answers before 10 PM.</p>
                 <p>Reminder: All Class 9 assignments are due on Jan 5th.</p>
@@ -34,12 +36,15 @@
     </div>
 
     <script>
-        // REPLACE THIS WITH YOUR ACTUAL CONFIGURATION! (Needs to be in every file)
+        // YOUR UNIQUE FIREBASE CONFIGURATION
         const firebaseConfig = {
-            // apiKey: "YOUR_API_KEY",
-            // authDomain: "YOUR_AUTH_DOMAIN",
-            // projectId: "YOUR_PROJECT_ID",
-            // ... other config ...
+            apiKey: "AIzaSyA6SLybR9y8M4OHC4wzEAwW0ZAhJV9J2DA",
+            authDomain: "wagoora-winter-portals.firebaseapp.com",
+            projectId: "wagoora-winter-portals",
+            storageBucket: "wagoora-winter-portals.firebasestorage.app",
+            messagingSenderId: "510362987404",
+            appId: "1:510362987404:web:40a10aa5d50a8fda7b44a9",
+            measurementId: "G-8T0EVTB95Q"
         };
 
         if (!firebase.apps.length) {
@@ -47,24 +52,52 @@
         }
 
         const auth = firebase.auth();
+        const db = firebase.firestore(); // Initialize Firestore
         const logoutButton = document.getElementById('logout-button');
         const displayName = document.getElementById('user-display-name');
+        const menuSection = document.querySelector('.menu');
 
-        // Check login status and display name
+        // --- Role Check and Dashboard Loading ---
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // User is signed in. You can customize the displayed name here.
-                displayName.textContent = user.email.split('@')[0]; // Simple way to display username
+                // User is signed in.
+                displayName.textContent = user.email.split('@')[0];
+
+                // 1. Check the user's role in the 'user_roles' collection
+                db.collection("user_roles").doc(user.uid).get()
+                    .then((doc) => {
+                        if (doc.exists) {
+                            const userRole = doc.data().role;
+                            
+                            if (userRole === 'admin') {
+                                console.log("Admin role detected. Adding Admin button.");
+                                
+                                // 2. Create and append the ADMIN TOOLS link
+                                const adminMenu = document.createElement('a');
+                                adminMenu.href = 'admin_tools.html';
+                                adminMenu.className = 'menu-item admin-only';
+                                adminMenu.innerHTML = '⚙️ **Admin Tools** (User Mgmt)';
+                                
+                                // Insert the Admin button at the top of the menu
+                                menuSection.prepend(adminMenu); 
+                            }
+                        } else {
+                            console.log("No role document found for this user.");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error retrieving user role:", error);
+                    });
+
             } else {
                 // User is signed out, redirect to login
                 window.location.href = 'index.html';
             }
         });
 
-        // Logout functionality
+        // --- Logout functionality ---
         logoutButton.addEventListener('click', () => {
             auth.signOut().then(() => {
-                // Sign-out successful.
                 window.location.href = 'index.html';
             }).catch((error) => {
                 console.error("Logout Error:", error);
