@@ -20,6 +20,10 @@
             
             <button type="submit" id="send-link-button">Send Login Link</button>
             <p id="message" class="error"></p>
+            
+            <p style="text-align:center; margin-top: 15px;">
+                New Student/Teacher? <a href="signup.html">Click here to Register</a>
+            </p>
         </form>
     </div>
 
@@ -47,7 +51,7 @@
         
         // --- 1. CONFIGURATION FOR THE EMAIL LINK REDIRECT ---
         const actionCodeSettings = {
-            // FIX: This must redirect back to index.html, where the sign-in logic is
+            // This correctly points back to index.html for sign-in completion.
             url: 'https://pspathgam.github.io/wagoora-winter-portals/index.html', 
             handleCodeInApp: true,
         };
@@ -80,11 +84,13 @@
         // --- 3. HANDLE SIGN-IN: USER RETURNS FROM EMAIL LINK ---
         // This runs if the user clicks the link and is redirected back here (index.html)
         if (auth.isSignInWithEmailLink(window.location.href)) {
+            // Attempt to retrieve email from local storage
             let email = window.localStorage.getItem('emailForSignIn');
             
+            // CRITICAL STEP: If email is missing, we must prompt the user
             if (!email) {
-                // If email is not saved, prompt the user (optional, but good for security)
-                email = window.prompt('Please provide your email for confirmation');
+                // The prompt will ensure the email variable is populated for the sign-in call
+                email = window.prompt('Welcome back! Please enter your email/ID to finalize your login:');
             }
 
             if (email) {
@@ -94,11 +100,10 @@
                     .then(() => {
                         window.localStorage.removeItem('emailForSignIn');
                         // Successfully signed in, redirect to dashboard.
-                        // The user is now authenticated and lands on dashboard.html!
                         window.location.href = 'dashboard.html'; 
                     })
                     .catch((error) => {
-                        messageElement.textContent = `❌ Sign-in failed: ${error.message}`;
+                        messageElement.textContent = `❌ Sign-in failed: ${error.message}. Please check your email and try logging in again.`;
                         console.error("Sign-in Link Error:", error);
                     });
             } else {
