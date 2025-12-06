@@ -1,0 +1,101 @@
+        <p style="text-align:center; margin-top: 15px;">
+            New Student/Teacher? <a href="signup.html">Click here to Register</a>
+        </p>
+    </div> 
+    ```
+
+## 📝 Step 2: Create the `signup.html` Page
+
+This new page will contain the form for user registration and the JavaScript to create the account in Firebase Authentication.
+
+Create a new file in your GitHub repository named **`signup.html`**.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wagoora Portal Signup</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script> 
+</head>
+<body>
+    <div class="container">
+        <h1>❄️ Wagoora Portal Registration</h1>
+        <form id="signup-form">
+            <h2>Create New Account</h2>
+            <input type="email" id="email" placeholder="Student ID / Email" required>
+            <input type="password" id="password" placeholder="Choose a Password" required>
+            
+            <label for="role-select" style="display: block; margin-top: 10px;">I am a:</label>
+            <select id="role-select" required style="width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+            </select>
+            
+            <button type="submit" style="margin-top: 20px;">Register Account</button>
+            <p id="message" class="error"></p>
+        </form>
+        <p style="text-align:center; margin-top: 15px;"><a href="index.html">Already Registered? Go to Login</a></p>
+    </div>
+
+    <script>
+        // *** PASTE YOUR UNIQUE FIREBASE CONFIGURATION HERE ***
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6SLybR9y8M4OHC4wzEAwW0ZAhJV9J2DA",
+            authDomain: "wagoora-winter-portals.firebaseapp.com",
+            projectId: "wagoora-winter-portals",
+            // ... rest of config
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const signupForm = document.getElementById('signup-form');
+        const messageElement = document.getElementById('message');
+
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const selectedRole = document.getElementById('role-select').value;
+
+            messageElement.textContent = 'Creating account...';
+
+            // 1. Create user in Firebase Authentication
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // 2. Save the role in the Firestore Database
+                    return db.collection("user_roles").doc(user.uid).set({
+                        role: selectedRole,
+                        email: email,
+                        signupDate: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    // 3. Success message and redirect
+                    messageElement.style.color = 'green';
+                    messageElement.textContent = `✅ Account created successfully as ${selectedRole}! Redirecting to login...`;
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 3000); // Redirect after 3 seconds
+                })
+                .catch((error) => {
+                    // Handle errors (e.g., weak password, email already in use)
+                    messageElement.style.color = 'red';
+                    messageElement.textContent = `Registration Failed: ${error.message}`;
+                    console.error("Signup Error:", error);
+                });
+        });
+    </script>
+</body>
+</html>
