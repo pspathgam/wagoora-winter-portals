@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wagoora Portal Login</title>
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 </head>
@@ -21,12 +22,15 @@
     </div>
 
     <script>
-        // REPLACE THIS WITH YOUR ACTUAL CONFIGURATION!
+        // YOUR UNIQUE FIREBASE CONFIGURATION (Provided by you)
         const firebaseConfig = {
-            // apiKey: "YOUR_API_KEY",
-            // authDomain: "YOUR_AUTH_DOMAIN",
-            // projectId: "YOUR_PROJECT_ID",
-            // ... other config ...
+            apiKey: "AIzaSyA6SLybR9y8M4OHC4wzEAwW0ZAhJV9J2DA",
+            authDomain: "wagoora-winter-portals.firebaseapp.com",
+            projectId: "wagoora-winter-portals",
+            storageBucket: "wagoora-winter-portals.firebasestorage.app",
+            messagingSenderId: "510362987404",
+            appId: "1:510362987404:web:40a10aa5d50a8fda7b44a9",
+            measurementId: "G-8T0EVTB95Q"
         };
 
         // Initialize Firebase
@@ -45,20 +49,19 @@
 
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    // Signed in successfully
+                    // Signed in successfully, redirect to dashboard
                     window.location.href = 'dashboard.html';
                 })
                 .catch((error) => {
-                    // Handle errors (e.g., wrong password)
+                    // Display login error
                     errorMessage.textContent = 'Login Failed: ' + error.message;
                     console.error("Login Error:", error);
                 });
         });
 
-        // Check if a user is already logged in (redirects them if true)
+        // Redirects user if they are already logged in
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // User is logged in, redirect to dashboard
                 window.location.href = 'dashboard.html';
             }
         });
