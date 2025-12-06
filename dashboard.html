@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hello, <span id="user-display-name">Student</span>!</h1>
+            <p>Welcome to your Zone Wagoora Winter Learning Portal.</p>
+            <button id="logout-button">Logout</button>
+        </header>
+
+        <section class="menu">
+            <a href="quiz.html" class="menu-item">📝 Daily MCQs</a>
+            <a href="leaderboard.html" class="menu-item">🏆 Live Leaderboard</a>
+            <a href="resources.html" class="menu-item">📚 Assignments & Resources</a>
+        </section>
+
+        <section class="notifications">
+            <h2>📢 Scrolling Notifications</h2>
+            <div id="scrolling-content">
+                <p>Day 1 Quiz is now LIVE! Submit your answers before 10 PM.</p>
+                <p>Reminder: All Class 9 assignments are due on Jan 5th.</p>
+                <p>Note: Check your rank on the Leaderboard!</p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // REPLACE THIS WITH YOUR ACTUAL CONFIGURATION! (Needs to be in every file)
+        const firebaseConfig = {
+            // apiKey: "YOUR_API_KEY",
+            // authDomain: "YOUR_AUTH_DOMAIN",
+            // projectId: "YOUR_PROJECT_ID",
+            // ... other config ...
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const logoutButton = document.getElementById('logout-button');
+        const displayName = document.getElementById('user-display-name');
+
+        // Check login status and display name
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in. You can customize the displayed name here.
+                displayName.textContent = user.email.split('@')[0]; // Simple way to display username
+            } else {
+                // User is signed out, redirect to login
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Logout functionality
+        logoutButton.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                // Sign-out successful.
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                console.error("Logout Error:", error);
+            });
+        });
+    </script>
+</body>
+</html>
