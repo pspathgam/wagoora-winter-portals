@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wagoora Portal Login</title>
+    <title>Wagoora Portal Login (Email Link)</title>
     <link rel="stylesheet" href="style.css">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -12,17 +12,19 @@
 <body>
     <div class="container">
         <h1>❄️ Wagoora Winter Portal Login</h1>
-        <form id="login-form">
-            <h2>Log In</h2>
+        
+        <form id="sign-in-form">
+            <h2>Log In (Passwordless)</h2>
+            <p>Enter your ID/Email and click the link sent to your inbox.</p>
             <input type="email" id="email" placeholder="Student ID / Email" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit">Access Portal</button>
-            <p id="error-message" class="error"></p>
+            
+            <button type="submit" id="send-link-button">Send Login Link</button>
+            <p id="message" class="error"></p>
         </form>
     </div>
 
     <script>
-        // YOUR UNIQUE FIREBASE CONFIGURATION (Provided by you)
+        // YOUR UNIQUE FIREBASE CONFIGURATION (The same configuration is used)
         const firebaseConfig = {
             apiKey: "AIzaSyA6SLybR9y8M4OHC4wzEAwW0ZAhJV9J2DA",
             authDomain: "wagoora-winter-portals.firebaseapp.com",
@@ -39,27 +41,72 @@
         }
 
         const auth = firebase.auth();
-        const loginForm = document.getElementById('login-form');
-        const errorMessage = document.getElementById('error-message');
+        const signInForm = document.getElementById('sign-in-form');
+        const messageElement = document.getElementById('message');
+        const sendLinkButton = document.getElementById('send-link-button');
+        
+        // --- 1. CONFIGURATION FOR THE EMAIL LINK REDIRECT ---
+        const actionCodeSettings = {
+            // Must be your GitHub Pages URL redirecting to dashboard.html
+            url: 'https://pspathgam.github.io/wagoora-winter-portals/dashboard.html',
+            handleCodeInApp: true,
+            // You may need to add a trailing slash to the domain in Authorized Domains list: pspathgam.github.io/
+        };
 
-        loginForm.addEventListener('submit', (e) => {
+
+        // --- 2. HANDLE SUBMISSION: SEND THE EMAIL LINK ---
+        signInForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
 
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Signed in successfully, redirect to dashboard
-                    window.location.href = 'dashboard.html';
+            sendLinkButton.disabled = true;
+            messageElement.textContent = 'Sending login link...';
+
+            auth.sendSignInLinkToEmail(email, actionCodeSettings)
+                .then(() => {
+                    // Save email so we can complete the sign-in later
+                    window.localStorage.setItem('emailForSignIn', email);
+                    messageElement.textContent = `✅ Login link sent to ${email}! Check your inbox.`;
                 })
                 .catch((error) => {
-                    // Display login error
-                    errorMessage.textContent = 'Login Failed: ' + error.message;
-                    console.error("Login Error:", error);
+                    messageElement.textContent = `Error sending link: ${error.message}`;
+                    console.error("Link Send Error:", error);
+                })
+                .finally(() => {
+                    sendLinkButton.disabled = false;
                 });
         });
+        
+        
+        // --- 3. HANDLE SIGN-IN: USER RETURNS FROM EMAIL LINK ---
+        // This runs if the user clicks the link and is redirected back here (index.html)
+        if (auth.isSignInWithEmailLink(window.location.href)) {
+            let email = window.localStorage.getItem('emailForSignIn');
+            
+            if (!email) {
+                // If email is not saved, prompt the user (optional, but good for security)
+                email = window.prompt('Please provide your email for confirmation');
+            }
 
-        // Redirects user if they are already logged in
+            if (email) {
+                messageElement.textContent = 'Signing you in...';
+                
+                auth.signInWithEmailLink(email, window.location.href)
+                    .then(() => {
+                        window.localStorage.removeItem('emailForSignIn');
+                        // Successfully signed in, redirect to dashboard.
+                        window.location.href = 'dashboard.html';
+                    })
+                    .catch((error) => {
+                        messageElement.textContent = `❌ Sign-in failed: ${error.message}`;
+                        console.error("Sign-in Link Error:", error);
+                    });
+            } else {
+                 messageElement.textContent = 'Sign-in link detected, but email was not provided.';
+            }
+        }
+        
+        // --- 4. CHECK AUTH STATE: Redirects if already logged in ---
         auth.onAuthStateChanged((user) => {
             if (user) {
                 window.location.href = 'dashboard.html';
