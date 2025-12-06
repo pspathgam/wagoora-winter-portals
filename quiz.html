@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily MCQs</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script> 
+    
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Daily MCQs</h1>
+        <div id="quiz-container">
+            <p>Loading today's quiz...</p>
+        </div>
+        <button id="submit-quiz" style="display:none;">Submit Quiz</button>
+        <div id="results" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        // *** 1. PASTE YOUR UNIQUE FIREBASE CONFIG HERE ***
+        const firebaseConfig = { 
+            apiKey: "AIzaSyA6SLybR9y8M4OHC4wzEAwW0ZAhJV9J2DA",
+            authDomain: "wagoora-winter-portals.firebaseapp.com",
+            projectId: "wagoora-winter-portals",
+            // ... rest of config
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const quizContainer = document.getElementById('quiz-container');
+        const submitButton = document.getElementById('submit-quiz');
+        let questionsData = [];
+
+        // Function to get the current date key (e.g., "Dec-06-2025")
+        function getCurrentDateKey() {
+            const now = new Date();
+            const options = { month: 'short', day: '2-digit', year: 'numeric' };
+            // Format to match the JSON structure (Dec-06-2025)
+            return now.toLocaleDateString('en-US', options).replace(/,/g, '').replace(/ /g, '-');
+        }
+
+        // --- 2. Load Questions from JSON ---
+        async function loadQuiz() {
+            try {
+                // Fetch the JSON file from the GitHub Pages root
+                const response = await fetch('daily_mcqs.json');
+                const allQuizzes = await response.json();
+                
+                const todayKey = getCurrentDateKey(); 
+                const todayQuiz = allQuizzes[todayKey]; 
+
+                if (todayQuiz && todayQuiz.questions && todayQuiz.questions.length > 0) {
+                    questionsData = todayQuiz.questions;
+                    renderQuiz(questionsData);
+                    submitButton.style.display = 'block'; // Show the submit button
+                } else {
+                    quizContainer.innerHTML = `<p>⚠️ No quiz found for today (${todayKey}). Check back later!</p>`;
+                }
+            } catch (error) {
+                quizContainer.innerHTML = `<p>Error loading quiz content: ${error.message}</p>`;
+                console.error("Quiz Load Error:", error);
+            }
+        }
+
+        // --- 3. Render Questions to HTML ---
+        function renderQuiz(questions) {
+            let html = `<h2>${questions.length} Questions: ${questions[0].question.slice(0, 30)}...</h2><form id="quiz-form">`;
+            questions.forEach((q, index) => {
+                html += `
+                    <div class="question-block" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd;">
+                        <p><strong>Q${index + 1}:</strong> ${q.question}</p>
+                        ${q.options.map((option, i) => `
+                            <div>
+                                <input type="radio" id="q${q.q_id}o${i}" name="q${q.q_id}" value="${option}">
+                                <label for="q${q.q_id}o${i}">${option}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            });
+            html += '</form>';
+            quizContainer.innerHTML = html;
+        }
+        
+        // --- 4. Handle Submission and Grading ---
+        submitButton.addEventListener('click', () => {
+            if (!auth.currentUser) {
+                alert("Please log in to submit your quiz.");
+                return;
+            }
+            
+            const form = document.getElementById('quiz-form');
+            let score = 0;
+            const totalQuestions = questionsData.length;
+
+            questionsData.forEach(q => {
+                const selectedOption = form.elements[`q${q.q_id}`].value;
+                if (selectedOption === q.answer) {
+                    score++;
+                }
+            });
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h3>Your Score: ${score} / ${totalQuestions}</h3>`;
+            submitButton.style.display = 'none';
+            
+            // Call the function to save the score to Firestore
+            saveScoreToDatabase(auth.currentUser.uid, score, totalQuestions);
+        });
+        
+        // --- 5. Save Score to Firestore (Requires 'quiz_scores' collection) ---
+        function saveScoreToDatabase(userId, score, total) {
+            db.collection("quiz_scores").add({
+                userId: userId,
+                score: score,
+                total: total,
+                quizDate: getCurrentDateKey(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                resultsDiv.innerHTML += `<p style="color: green;">Score saved successfully! Check the leaderboard!</p>`;
+            })
+            .catch((error) => {
+                resultsDiv.innerHTML += `<p style="color: red;">Error saving score. Please try again. ${error.message}</p>`;
+                console.error("Firestore Save Error:", error);
+            });
+        }
+
+        // Check login and start loading quiz when page loads
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loadQuiz();
+            } else {
+                alert("You must be logged in to access the quiz.");
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+</body>
+</html>
