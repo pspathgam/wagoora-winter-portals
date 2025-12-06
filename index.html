@@ -26,7 +26,7 @@
     <script>
         // YOUR UNIQUE FIREBASE CONFIGURATION (The same configuration is used)
         const firebaseConfig = {
-            apiKey: "AIzaSyA6SLybR9y8M4OHC4wzEAwW0ZAhJV9J2DA",
+            apiKey: "AIzaSyA6SLybR9y8MOHC4wzEAwW0ZAhJV9J2DA",
             authDomain: "wagoora-winter-portals.firebaseapp.com",
             projectId: "wagoora-winter-portals",
             storageBucket: "wagoora-winter-portals.firebasestorage.app",
@@ -47,10 +47,9 @@
         
         // --- 1. CONFIGURATION FOR THE EMAIL LINK REDIRECT ---
         const actionCodeSettings = {
-            // Must be your GitHub Pages URL redirecting to dashboard.html
-            url: 'https://pspathgam.github.io/wagoora-winter-portals/dashboard.html',
+            // FIX: This must redirect back to index.html, where the sign-in logic is
+            url: 'https://pspathgam.github.io/wagoora-winter-portals/index.html', 
             handleCodeInApp: true,
-            // You may need to add a trailing slash to the domain in Authorized Domains list: pspathgam.github.io/
         };
 
 
@@ -95,7 +94,8 @@
                     .then(() => {
                         window.localStorage.removeItem('emailForSignIn');
                         // Successfully signed in, redirect to dashboard.
-                        window.location.href = 'dashboard.html';
+                        // The user is now authenticated and lands on dashboard.html!
+                        window.location.href = 'dashboard.html'; 
                     })
                     .catch((error) => {
                         messageElement.textContent = `❌ Sign-in failed: ${error.message}`;
@@ -115,3 +115,4 @@
     </script>
 </body>
 </html>
+                 
