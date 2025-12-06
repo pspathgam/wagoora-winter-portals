@@ -1,0 +1,30 @@
+{
+  "Dec-25-2025": {
+    "title": "Day 1: Science and Math Basics",
+    "questions": [
+      {
+        "q_id": 1,
+        "question": "Which gas is most abundant in Earth's atmosphere?",
+        "options": ["Oxygen", "Nitrogen", "Carbon Dioxide", "Argon"],
+        "answer": "Nitrogen"
+      },
+      {
+        "q_id": 2,
+        "question": "What is the square root of 144?",
+        "options": ["10", "12", "14", "16"],
+        "answer": "12"
+      }
+    ]
+  },
+  "Dec-26-2025": {
+    "title": "Day 2: English Grammar",
+    "questions": [
+        {
+            "q_id": 3,
+            "question": "Identify the noun in the sentence: 'The quick brown fox jumps over the lazy dog.'",
+            "options": ["quick", "jumps", "dog", "over"],
+            "answer": "dog"
+        }
+    ]
+  }
+}
