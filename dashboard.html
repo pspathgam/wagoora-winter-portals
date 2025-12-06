@@ -69,18 +69,32 @@
                         if (doc.exists) {
                             const userRole = doc.data().role;
                             
+                            // CHECK FOR ADMIN ROLE
                             if (userRole === 'admin') {
                                 console.log("Admin role detected. Adding Admin button.");
                                 
-                                // 2. Create and append the ADMIN TOOLS link
                                 const adminMenu = document.createElement('a');
                                 adminMenu.href = 'admin_tools.html';
                                 adminMenu.className = 'menu-item admin-only';
                                 adminMenu.innerHTML = '⚙️ **Admin Tools** (User Mgmt)';
                                 
-                                // Insert the Admin button at the top of the menu
+                                // Insert at the top of the menu
                                 menuSection.prepend(adminMenu); 
+                            } 
+                            
+                            // ADDED: CHECK FOR TEACHER ROLE
+                            else if (userRole === 'teacher') {
+                                console.log("Teacher role detected. Adding Teacher button.");
+                                
+                                const teacherMenu = document.createElement('a');
+                                teacherMenu.href = 'teacher_tools.html'; 
+                                teacherMenu.className = 'menu-item teacher-only';
+                                teacherMenu.innerHTML = '🍎 **Teacher Tools** (Quiz/Grades)';
+                                
+                                // Insert at the top of the menu
+                                menuSection.prepend(teacherMenu); 
                             }
+                            
                         } else {
                             console.log("No role document found for this user.");
                         }
