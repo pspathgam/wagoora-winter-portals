@@ -1,16 +1,3 @@
-        <p style="text-align:center; margin-top: 15px;">
-            New Student/Teacher? <a href="signup.html">Click here to Register</a>
-        </p>
-    </div> 
-    ```
-
-## 📝 Step 2: Create the `signup.html` Page
-
-This new page will contain the form for user registration and the JavaScript to create the account in Firebase Authentication.
-
-Create a new file in your GitHub repository named **`signup.html`**.
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,12 +31,15 @@ Create a new file in your GitHub repository named **`signup.html`**.
     </div>
 
     <script>
-        // *** PASTE YOUR UNIQUE FIREBASE CONFIGURATION HERE ***
+        // *** UPDATED FIREBASE CONFIGURATION ***
         const firebaseConfig = {
-            apiKey: "AIzaSyA6SLybR9y8M4OHC4wzEAwW0ZAhJV9J2DA",
-            authDomain: "wagoora-winter-portals.firebaseapp.com",
-            projectId: "wagoora-winter-portals",
-            // ... rest of config
+          apiKey: "AIzaSyCBLLmzxVYuivT15HBPPSxMoS2OzojRgJM",
+          authDomain: "wap-ps-pethgam.firebaseapp.com",
+          databaseURL: "https://wap-ps-pethgam-default-rtdb.firebaseio.com",
+          projectId: "wap-ps-pethgam",
+          storageBucket: "wap-ps-pethgam.firebasestorage.app",
+          messagingSenderId: "430925411362",
+          appId: "1:430925411362:web:22857dee585d02fc54467b"
         };
 
         if (!firebase.apps.length) {
@@ -57,7 +47,7 @@ Create a new file in your GitHub repository named **`signup.html`**.
         }
 
         const auth = firebase.auth();
-        const db = firebase.firestore();
+        const db = firebase.firestore(); 
         const signupForm = document.getElementById('signup-form');
         const messageElement = document.getElementById('message');
 
@@ -69,12 +59,10 @@ Create a new file in your GitHub repository named **`signup.html`**.
 
             messageElement.textContent = 'Creating account...';
 
-            // 1. Create user in Firebase Authentication
             auth.createUserWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
                     
-                    // 2. Save the role in the Firestore Database
                     return db.collection("user_roles").doc(user.uid).set({
                         role: selectedRole,
                         email: email,
@@ -82,15 +70,13 @@ Create a new file in your GitHub repository named **`signup.html`**.
                     });
                 })
                 .then(() => {
-                    // 3. Success message and redirect
                     messageElement.style.color = 'green';
                     messageElement.textContent = `✅ Account created successfully as ${selectedRole}! Redirecting to login...`;
                     setTimeout(() => {
                         window.location.href = 'index.html';
-                    }, 3000); // Redirect after 3 seconds
+                    }, 3000); 
                 })
                 .catch((error) => {
-                    // Handle errors (e.g., weak password, email already in use)
                     messageElement.style.color = 'red';
                     messageElement.textContent = `Registration Failed: ${error.message}`;
                     console.error("Signup Error:", error);
