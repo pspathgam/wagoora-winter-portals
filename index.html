@@ -28,15 +28,15 @@
     </div>
 
     <script>
-        // YOUR UNIQUE FIREBASE CONFIGURATION (The same configuration is used)
+        // *** UPDATED FIREBASE CONFIGURATION ***
         const firebaseConfig = {
-            apiKey: "AIzaSyA6SLybR9y8MOHC4wzEAwW0ZAhJV9J2DA",
-            authDomain: "wagoora-winter-portals.firebaseapp.com",
-            projectId: "wagoora-winter-portals",
-            storageBucket: "wagoora-winter-portals.firebasestorage.app",
-            messagingSenderId: "510362987404",
-            appId: "1:510362987404:web:40a10aa5d50a8fda7b44a9",
-            measurementId: "G-8T0EVTB95Q"
+          apiKey: "AIzaSyCBLLmzxVYuivT15HBPPSxMoS2OzojRgJM",
+          authDomain: "wap-ps-pethgam.firebaseapp.com",
+          databaseURL: "https://wap-ps-pethgam-default-rtdb.firebaseio.com",
+          projectId: "wap-ps-pethgam",
+          storageBucket: "wap-ps-pethgam.firebasestorage.app",
+          messagingSenderId: "430925411362",
+          appId: "1:430925411362:web:22857dee585d02fc54467b"
         };
 
         // Initialize Firebase
@@ -67,7 +67,6 @@
 
             auth.sendSignInLinkToEmail(email, actionCodeSettings)
                 .then(() => {
-                    // Save email so we can complete the sign-in later
                     window.localStorage.setItem('emailForSignIn', email);
                     messageElement.textContent = `✅ Login link sent to ${email}! Check your inbox.`;
                 })
@@ -82,14 +81,10 @@
         
         
         // --- 3. HANDLE SIGN-IN: USER RETURNS FROM EMAIL LINK ---
-        // This runs if the user clicks the link and is redirected back here (index.html)
         if (auth.isSignInWithEmailLink(window.location.href)) {
-            // Attempt to retrieve email from local storage
             let email = window.localStorage.getItem('emailForSignIn');
             
-            // CRITICAL STEP: If email is missing, we must prompt the user
             if (!email) {
-                // The prompt will ensure the email variable is populated for the sign-in call
                 email = window.prompt('Welcome back! Please enter your email/ID to finalize your login:');
             }
 
@@ -99,7 +94,12 @@
                 auth.signInWithEmailLink(email, window.location.href)
                     .then(() => {
                         window.localStorage.removeItem('emailForSignIn');
-                        // Successfully signed in, redirect to dashboard.
+                        
+                        // FIX: Clean the URL so the sign-in doesn't loop
+                        if (window.history.replaceState) {
+                            window.history.replaceState(null, null, window.location.pathname);
+                        }
+                        
                         window.location.href = 'dashboard.html'; 
                     })
                     .catch((error) => {
@@ -111,7 +111,7 @@
             }
         }
         
-        // --- 4. CHECK AUTH STATE: Redirects if already logged in ---
+        // --- 4. CHECK AUTH STATE: Redirects user if already logged in ---
         auth.onAuthStateChanged((user) => {
             if (user) {
                 window.location.href = 'dashboard.html';
@@ -120,4 +120,4 @@
     </script>
 </body>
 </html>
-                 
+                    .
